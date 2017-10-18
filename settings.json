@@ -1,4 +1,6 @@
 {
-	"command":"",
-	"args":[]
+	"Classpath":[],
+	"MainClass":"",
+	"JArgs":[],
+	"HideConsole":false
 }

@@ -1,7 +1,8 @@
 package settings
 
 type Settings struct{
-	Command string
-	Args []string
-	Icon string
+	Classpath []string
+	MainClass string
+	JArgs []string
+	HideConsole bool
 }

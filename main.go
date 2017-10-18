@@ -5,14 +5,16 @@ import (
 	"github.com/vlinx-io/go-logging"
 	"os/exec"
 	"io/ioutil"
-	"github.com/vlinx-io/wrapper/settings"
+	"github.com/vlinx-io/java-wrapper/settings"
 	"encoding/json"
-	"github.com/vlinx-io/wrapper/utils"
+	"github.com/vlinx-io/java-wrapper/utils"
 	"fmt"
+	"runtime"
 )
 
 var logger = logging.New("info.log","error.log")
 
+// 这个Wrapper这周先做windows的吧，下周再做linux和mac两个系统的
 func main() {
 
 	exeDir := utils.GetExeDir()
@@ -35,16 +37,39 @@ func main() {
 		os.Exit(1)
 	}
 
-	executable := exeDir + string(os.PathSeparator) + setting.Command
+	command := "java"
+
+	if setting.HideConsole && runtime.GOOS == "windows" {
+		command = "javaw"
+	}
+
+	// 获取可执行的java文件的详细路径
+	executable := exeDir + string(os.PathSeparator) + "jre" + string(os.PathSeparator) + "bin" + string(os.PathSeparator) + command
 	log := fmt.Sprint("Executable",executable)
 	logger.Info(log)
 
-	var args []string
+	// 将setting中的项都赋值出来，不直接在setting中操作
+	classpath := setting.Classpath
 
+	// 遍历classpath，将每个相对路径都变为绝对路径
+	for index,value := range classpath {
+
+		value = exeDir + string(os.PathSeparator) + value
+		classpath[index] = value
+
+	}
+
+	classpath = append([]string{"-cp"},classpath...)
+
+	// java的Arg在前，classpath在后
+	args := append(setting.JArgs,classpath...)
+
+	// 将mainClass内容并入参数
+	args = append(args,setting.MainClass)
+	
+	// 再将用户命令中的参数赋值
 	if len(os.Args) > 1 {
-		args = append(setting.Args,os.Args[1:]...)
-	}else{
-		args = setting.Args
+		args = append(args,os.Args[1:]...)
 	}
 
 	logger.Info("Args",args)
@@ -56,12 +81,6 @@ func main() {
 	process.Stderr = os.Stderr
 
 	err = process.Run()
-
-	var arr = []interface{}{"hello","world"}
-
-	str := fmt.Sprint(arr...)
-
-	fmt.Println(str)
 
 	if err!=nil {
 		logger.Error(err)

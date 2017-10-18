@@ -2,20 +2,18 @@ package main
 
 import (
 	"os"
-	"github.com/vlinx-io/go-logging"
 	"os/exec"
 	"io/ioutil"
 	"github.com/vlinx-io/java-wrapper/settings"
 	"encoding/json"
 	"github.com/vlinx-io/java-wrapper/utils"
-	"fmt"
 	"runtime"
+	"log"
 )
-
-var logger = logging.New("info.log","error.log")
 
 // 这个Wrapper这周先做windows的吧，下周再做linux和mac两个系统的
 func main() {
+
 
 	exeDir := utils.GetExeDir()
 
@@ -24,8 +22,7 @@ func main() {
 	data, err := ioutil.ReadFile(settingsFile)
 
 	if err!=nil {
-		logger.Error(err)
-		os.Exit(1)
+		log.Fatalln(err)
 	}
 
 	var setting settings.Settings
@@ -33,8 +30,11 @@ func main() {
 	err = json.Unmarshal(data,&setting)
 
 	if err!=nil {
-		logger.Error(err)
-		os.Exit(1)
+		log.Fatalln(err)
+	}
+
+	if setting.Verbose {
+		log.Println("VLINX Java Wrapper 0.1")
 	}
 
 	command := "java"
@@ -45,8 +45,10 @@ func main() {
 
 	// 获取可执行的java文件的详细路径
 	executable := exeDir + string(os.PathSeparator) + "jre" + string(os.PathSeparator) + "bin" + string(os.PathSeparator) + command
-	log := fmt.Sprint("Executable",executable)
-	logger.Info(log)
+
+	if setting.Verbose {
+		log.Println("Command:",executable)
+	}
 
 	// 将setting中的项都赋值出来，不直接在setting中操作
 	classpath := setting.Classpath
@@ -66,13 +68,16 @@ func main() {
 
 	// 将mainClass内容并入参数
 	args = append(args,setting.MainClass)
-	
+
 	// 再将用户命令中的参数赋值
 	if len(os.Args) > 1 {
 		args = append(args,os.Args[1:]...)
 	}
 
-	logger.Info("Args",args)
+	if setting.Verbose {
+		log.Println("Args:",args)
+	}
+
 
 	process := exec.Command(executable,args...)
 
@@ -83,7 +88,7 @@ func main() {
 	err = process.Run()
 
 	if err!=nil {
-		logger.Error(err)
+		log.Fatalln(err)
 	}
 
 }

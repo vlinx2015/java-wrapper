@@ -17,7 +17,11 @@ func main() {
 
 	exeDir := utils.GetExeDir()
 
-	settingsFile := exeDir + string(os.PathSeparator) + "wrapper.json"
+	settingsFile := utils.GetBaseName(os.Args[0]) + ".json"
+
+	if !utils.FileExist(settingsFile) {
+		settingsFile = exeDir + string(os.PathSeparator) + "wrapper.json"
+	}
 
 	data, err := ioutil.ReadFile(settingsFile)
 

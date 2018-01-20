@@ -72,7 +72,7 @@ func main() {
 	}
 
 	//将classpath转换为字符串
-	cp := strings.Join(classpath,sep)
+	cp := strings.Join(classpath, sep)
 
 	classpath = append([]string{"-cp"}, cp)
 

@@ -32,6 +32,7 @@ func main() {
 	}
 
 	if setting.Verbose {
+		log.Println("VLINX Java Wrapper 0.2")
 	}
 
 	command := "java"
